@@ -41,22 +41,7 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  FlatButton(
-                    onPressed: () {
-                      Provider.of<Order>(context, listen: false).addOrders(
-                        cart.items.values.toList(),
-                        cart.totalAmount(),
-                      );
-
-                      cart.clearCart();
-                    },
-                    child: Text(
-                      "Order Now",
-                      style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w700),
-                    ),
-                  )
+                  OrderNowButton(cart: cart)
                 ],
               ),
             ),
@@ -78,6 +63,53 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class OrderNowButton extends StatefulWidget {
+  const OrderNowButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  State<OrderNowButton> createState() => _OrderNowButtonState();
+}
+
+class _OrderNowButtonState extends State<OrderNowButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      onPressed: (widget.cart.items.length <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              await Provider.of<Order>(context, listen: false).addOrders(
+                widget.cart.items.values.toList(),
+                widget.cart.totalAmount(),
+              );
+
+              setState(() {
+                _isLoading = false;
+              });
+              widget.cart.clearCart();
+            },
+      child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Text(
+              "Order Now",
+              style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w700),
+            ),
     );
   }
 }
